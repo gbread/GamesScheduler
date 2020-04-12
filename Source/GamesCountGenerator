@@ -1,0 +1,28 @@
+param M integer;   # number of players in one game (4)
+param N;   # number of players in one group
+param G;   # number of games each player will play with some other player
+
+var x integer; # x result is TG = Total number of games
+var couplesValue integer;
+
+
+s.t. couplesMaker:
+    couplesValue = (prod{i in N-2+1..N} i) / prod{i in 1..2} i; 
+
+s.t. resultMaker:
+    x = G*(couplesValue)/((prod{i in  M-2+1..M} i) / prod{i in 1..2} i);
+solve;
+    
+    #printf "Player %d: sum %d, bin: %d, plays in game %d: %s.\n", i, sum{j in 1..N} x[i, j, k], y[i, k], k,
+    printf "Total number of games (TG): %d \n", x;
+
+
+    
+data;
+
+param M := 4;
+param N := 7;
+param G := 2;
+
+
+
