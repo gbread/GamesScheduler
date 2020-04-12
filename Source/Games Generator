@@ -1,0 +1,83 @@
+param M integer;   # number of players in one game (4)
+param N;   # number of players in one group
+param G;   # number of games each player will play with some other player
+param TG;  # total number of Games (7)
+
+var x{1..N, 1..N, 1..TG} binary; # x_ijk = 1 <=> player i played with player j in game k
+var y{1..N, 1..TG} binary; # y_ik = 1 <=> player i player in game k
+
+
+s.t. xyequality3{i in 1..N, j in i+1..N, k in 1..TG}:
+    -1.5 + y[i, k] + y[j, k] <= x[i, j, k];
+
+s.t. xyequality4{i in 1..N, j in i+1..N, k in 1..TG}:
+    y[i, k] >= x[i, j, k];
+
+s.t. xyequality5{i in 1..N, j in i+1..N, k in 1..TG}:
+    y[j, k] >= x[j, i, k];
+
+
+
+
+s.t. comutativity{i in 1..N, j in i+1..N, k in 1..TG}:
+    x[i, j, k] = x[j, i, k];
+
+s.t. gameHasMPlayers{k in 1..TG}:
+    sum{i in 1..N} y[i, k] = M;
+
+
+ 
+s.t. selfIsZero{i in 1..N, k in 1..TG}:
+    x[i, i, k] = 0; #y[i, k];
+
+s.t. eachWithOther{i in 1..N, j in i+1..N}:
+    sum{k in 1..TG} (x[i, j, k] + x[j, i, k]) = 2*G;
+ 
+solve;
+    
+for {i in 1..N, k in 1..TG} {
+    printf "Player %d: sum %d, bin: %d, plays in game %d: %s.\n", i, sum{j in 1..N} x[i, j, k], y[i, k], k,
+    #printf "Player %d plays in game %d: %s.\n", i, k, 
+    if sum{j in 1..N} x[i, j, k] > 0
+    then "yes"
+    else "no";
+} 
+printf "\n\n";
+for {k in 1..TG} {
+  printf "Game %d has %d players. Players: ", k, sum{i in 1..N} y[i, k];
+  for {i in 1..N} {
+    printf (if y[i, k] > 0 then "%d " else ""), i;
+  }
+  printf "\n";
+}
+printf "\n";
+for {i in 1..N} {
+  printf "Player %d plays %d games against players: ", i, sum{k in 1..TG} y[i, k];
+  for {j in 1..N, k in 1..TG} {
+    printf (if x[i, j, k] > 0 then "%d, " else ""), j;
+  }
+  printf "\n";
+}
+printf "\n";
+for {i in 1..N} {
+  printf "Player %d plays %d games against players in games: ", i, sum{k in 1..TG} y[i, k];
+  for {j in 1..N, k in 1..TG} {
+    printf (if x[i, j, k] > 0 then "%d in %d, " else ""), j, k;
+  }
+  printf "\n";
+}
+
+for{k in 1..TG} {
+printf "MRDEK: %d", sum{i in 1..N, j in 1..N} x[i, j, k];
+}
+
+
+    
+data;
+
+param M := 4;
+param N := 7;
+param G := 2;
+param TG := 8;
+
+
